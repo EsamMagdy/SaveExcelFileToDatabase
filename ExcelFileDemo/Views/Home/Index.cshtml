@@ -1,0 +1,133 @@
+﻿@using ExcelFileDemo.ViewModel
+@model HomeViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+<div class="container" style="margin-top:3rem">
+
+    <div class="row" style="margin-bottom:3rem">
+        <div class="form-inline">
+            <div class="form-group col-lg-6">
+                <label class="col-sm-3 control-label" for="exampleInputName2">Excel File</label>
+                @*@using (Html.BeginForm("UploadFile", "Home", FormMethod.Post, new { enctype = "multipart/form-data", id = "uploadFormId" }))
+                    {
+                        <div>
+                            @Html.TextBox("file", "", new { type = "file" }) <br />
+                        </div>
+                    }*@
+                <input type="file" id="excelFile" name="excelFile" value="" class="form-control" />
+                <input type="button" value="Upload" id="btnUploadExcelFile" name="excelFile" class="form-control" />
+            </div>
+            <div class="form-group col-lg-6">
+                <label class="col-sm-3 control-label" for="exampleInputEmail2">Entities</label>
+                @Html.DropDownListFor(s => s.TableName, new SelectList(Model.Tables), new { @class = "form-control" })
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-inline">
+            <div class="form-group col-lg-6">
+                <label class="col-sm-3 control-label" for="exampleInputName2">Excel Columns</label>
+                <select class="form-control" id="excelColumnsSelect" name="excelColumns">
+                </select>
+            </div>
+            <div class="form-group col-lg-6">
+                <label class="col-sm-3 control-label" for="exampleInputName2">Table Columns</label>
+                <select class="form-control" id="tableColumns">
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        //$("#uploadFormId").on('submit', function (event) {
+        //    debugger;
+        //    event.preventDefault();
+        //});
+        $('#btnUploadExcelFile').on('click', function (e) {
+            debugger;
+            var fileUpload = $("#excelFile").get(0);
+            var files = fileUpload.files;
+
+            // Create FormData object
+            var fileData = new FormData();
+
+            // Looping over all files and add it to FormData object
+            for (var i = 0; i < files.length; i++) {
+                fileData.append(files[i].name, files[i]);
+            }
+
+            // Adding one more key to FormData object
+            //fileData.append('username', ‘Manas’);
+
+            $.ajax({
+                url: '/Home/UploadExcelFile',
+                type: "POST",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (result) {
+                    debugger;
+                    let excelColumnsOptions = ``;
+                    $.each(result, (index, value) => {
+
+                        excelColumnsOptions += `<option value="${value}">${value}</option>`;
+                    });
+                    $("#excelColumnsSelect").append(excelColumnsOptions);
+                },
+                error: function (err) {
+                    alert(err.statusText);
+                }
+            });
+        }
+        );
+        //$('#excelFile').on('change', function (e) {
+        //    debugger;
+        //    let filePath = e.target.value;
+        //    $.ajax({
+        //        type: 'GET',
+        //        url: '/home/GetTableExcelFileData?filePath=' + filePath,
+        //        dataType: "json",
+        //        contentType: "application/json; charset=utf-8",
+        //        success: function (result) {
+        //            debugger;
+
+
+        //        },
+        //        error: function () {
+        //            alert("Error while inserting data");
+        //        }
+        //    });
+        //});
+        $("#TableName").on('change', function (e) {
+            debugger;
+            let tableName = e.target.value;
+            $.ajax({
+                type: 'GET',
+                url: '/home/GetTableData?tableName=' + tableName,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (result) {
+                    debugger;
+                    console.log(result);
+                    let excelColumnsOptions = ``;
+                    $.each(result, (index, value) => {
+
+                        excelColumnsOptions += `<option value="${value.DATA_TYPE}">${value.COLUMN_NAME}</option>`;
+                    });
+                    $("#tableColumns").append(excelColumnsOptions);
+
+                },
+                error: function () {
+                    alert("Error while inserting data");
+                }
+            });
+        });
+    });
+</script>
